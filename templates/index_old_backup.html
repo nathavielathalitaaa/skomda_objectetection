@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DTP AI Project - Object Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f7f7f8;
+            color: #222;
+            min-height: 100vh;
+            padding: 12px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        /* Header (compact, minimal) */
+        .header {
+            background: #fff;
+            padding: 12px 16px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header h1 { font-size: 1.25rem; font-weight: 700; color: #C41E3A; display: flex; align-items: center; gap: 10px; }
+        .status-badge { display: flex; align-items: center; gap: 8px; background: #2e7d32; color: #fff; padding: 6px 10px; border-radius: 18px; font-size: .85rem; }
+        .status-dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; }
+        /* Layout */
+        .main-content { display: grid; grid-template-columns: 1fr 300px; gap: 12px; }
+        /* Video */
+        .video-container { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 10px; }
+        .video-wrapper { position: relative; width: 100%; border-radius: 8px; overflow: hidden; }
+        #videoFeed { width: 100%; height: auto; display: block; max-height: 70vh; object-fit: contain; background: #000; }
+        .video-overlay { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,.65); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: .8rem; }
+        /* Right panel */
+        .controls-panel { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 12px; }
+        .panel-section { margin-bottom: 14px; }
+        .panel-section h3 { color: #C41E3A; font-size: .95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        /* Stats minimal chips */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .stat-card { background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 10px; }
+        .stat-card h4 { font-size: .8rem; color: #666; margin-bottom: 4px; }
+        .stat-value { font-size: 1.2rem; font-weight: 700; }
+        .stat-card.green { border-color: #c8e6c9; }
+        .stat-card.orange { border-color: #ffe0b2; }
+        .stat-card.blue { border-color: #bbdefb; }
+        /* Forms */
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #333; font-size: .9rem; }
+        select, input[type="range"], input[type="text"] {
+            width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: .92rem;
+        }
+        input[type="range"] { padding: 0; height: 6px; }
+        .toggle-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .toggle-switch { position: relative; width: 46px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #cfcfcf; transition: .2s; border-radius: 24px; }
+        .toggle-slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; transition: .2s; border-radius: 50%; }
+        input:checked + .toggle-slider { background: #2e7d32; }
+        input:checked + .toggle-slider:before { transform: translateX(22px); }
+        /* Buttons minimal */
+        .btn { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { background: #C41E3A; color: #fff; border-color: #C41E3A; }
+        .btn-danger { background: #d32f2f; color: #fff; border-color: #d32f2f; }
+        .btn-success { background: #2e7d32; color: #fff; border-color: #2e7d32; }
+        .btn-secondary { background: #eee; color: #222; }
+        /* Lists */
+        .objects-list { background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 8px; max-height: 180px; overflow-y: auto; }
+        .object-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: #fff; border: 1px solid #f0f0f0; border-radius: 6px; margin-bottom: 6px; }
+        .object-name { font-weight: 600; color: #333; }
+        .object-count { background: #C41E3A; color: #fff; padding: 2px 8px; border-radius: 14px; font-size: .85rem; font-weight: 700; }
+        /* Footer minimized */
+        .footer { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 10px; margin-top: 12px; text-align: center; }
+        .footer p { color: #666; margin-bottom: 6px; font-size: .9rem; }
+        .color-legend { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-box { width: 14px; height: 14px; border-radius: 3px; }
+        .legend-box.red { background: #f44336; }
+        .legend-box.green { background: #4CAF50; }
+        .legend-box.orange { background: #ff9800; }
+        /* Responsive */
+        @media (max-width: 1200px) { .main-content { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                DTP AI Project - Object Detector
+            </h1>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span id="statusText">Live Detection</span>
+                <span id="sourceIndicator" class="source-indicator source-camera">Camera</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Video Section -->
+            <div class="video-container">
+                <div class="video-wrapper">
+                    <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Video Feed">
+                    <div class="video-overlay" id="videoOverlay">
+                        <i class="fas fa-camera"></i> <span id="overlayText">Camera Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <!-- Statistics -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-chart-bar"></i> Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card green">
+                            <h4>In ROI</h4>
+                            <div class="stat-value" id="statInROI">0</div>
+                        </div>
+                        <div class="stat-card orange">
+                            <h4>Outside ROI</h4>
+                            <div class="stat-value" id="statOutside">0</div>
+                        </div>
+                        <div class="stat-card blue">
+                            <h4>FPS</h4>
+                            <div class="stat-value" id="statFPS">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total Objects</h4>
+                            <div class="stat-value" id="statTotal">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-cog"></i> Settings</h3>
+                    
+                    <div class="form-group">
+                        <label>ROI Position</label>
+                        <select id="roiType">
+                            <option value="center">Center</option>
+                            <option value="top">Top</option>
+                            <option value="bottom">Bottom</option>
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confidence Threshold</label>
+                        <input type="range" id="confThreshold" min="0" max="1" step="0.05" value="0.5">
+                        <div class="range-value" id="confValue">0.50</div>
+                    </div>
+
+                    <div class="toggle-group">
+                        <label>Show ROI Box</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showROI" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <label>Show Labels</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showLabels" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <label>Detect Face Emotion</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="detectEmotion" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <label>Flip Horizontal (Unmirror)</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="flipHorizontal" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Video Source Control -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-photo-video"></i> Video Source</h3>
+                    
+                    <div class="file-upload-wrapper">
+                        <label for="videoFile" class="file-upload-label">
+                            <i class="fas fa-upload"></i>
+                            Upload Video File
+                        </label>
+                        <input type="file" id="videoFile" class="file-upload-input" accept="video/*" onchange="uploadVideo()">
+                        <div id="fileNameDisplay" class="file-name-display"></div>
+                    </div>
+
+                    <button class="btn btn-success" onclick="switchToCamera()" style="width: 100%; margin-bottom: 10px;">
+                        <i class="fas fa-camera"></i> Switch to Camera
+                    </button>
+
+                    <button id="toggleCameraBtn" class="btn btn-danger" onclick="toggleCamera()" style="width: 100%;">
+                        <i class="fas fa-stop"></i> Stop Camera/Video
+                    </button>
+
+                    <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+                        <div class="form-group">
+                            <label>Select Camera Index</label>
+                            <select id="cameraIndex">
+                                <option value="0">Camera 0 (Default)</option>
+                                <option value="1">Camera 1</option>
+                                <option value="2">Camera 2</option>
+                                <option value="3">Camera 3</option>
+                                <option value="4">Camera 4</option>
+                                <option value="5">Camera 5</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-secondary" onclick="useSelectedCamera()" style="width: 100%; margin-bottom: 10px;">
+                            <i class="fas fa-video"></i> Use Selected Camera
+                        </button>
+
+                        <div class="form-group">
+                            <label>IP Camera URL (http/rtsp)</label>
+                            <input type="text" id="ipUrl" placeholder="e.g. http://192.168.1.20:8080/video or rtsp://..." style="width:100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px;">
+                        </div>
+                        <button class="btn btn-primary" onclick="useIpCamera()" style="width: 100%;">
+                            <i class="fas fa-network-wired"></i> Use IP Camera
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Detected Objects -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-list"></i> Detected Objects</h3>
+                    <div class="objects-list" id="objectsList">
+                        <p style="text-align: center; color: #999;">No objects detected</p>
+                    </div>
+                </div>
+
+                <!-- Detected Emotions -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-smile"></i> Face Emotions</h3>
+                    <div class="objects-list" id="emotionsList">
+                        <p style="text-align: center; color: #999;">No emotions detected</p>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="panel-section">
+                    <button class="btn btn-primary" onclick="applySettings()">
+                        <i class="fas fa-check"></i> Apply Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Color Legend:</strong></p>
+            <div class="color-legend">
+                <div class="legend-item">
+                    <div class="legend-box red"></div>
+                    <span>ROI Area</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box green"></div>
+                    <span>Objects in ROI</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box orange"></div>
+                    <span>Objects Outside ROI</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="background: #ff00ff;"></div>
+                    <span>Face Detection</span>
+                </div>
+            </div>
+            <p style="margin-top: 20px; text-align: center; font-size: 0.9em; color: #555;">
+                <strong>🎓 Created by SMK Telkom Sidoarjo - DTP AI Specialist</strong><br>
+                <span style="font-size: 0.85em;">Object Detection with Face Emotion Recognition</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Update statistics every second
+        function updateStats() {
+            fetch('/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('statInROI').textContent = data.objects_in_roi;
+                    document.getElementById('statOutside').textContent = data.objects_outside_roi;
+                    document.getElementById('statTotal').textContent = data.total_detections;
+                    document.getElementById('statFPS').textContent = data.fps.toFixed(1);
+
+                    // Update detected objects list
+                    const objectsList = document.getElementById('objectsList');
+                    if (Object.keys(data.detected_objects).length === 0) {
+                        objectsList.innerHTML = '<p style="text-align: center; color: #999;">No objects detected</p>';
+                    } else {
+                        let html = '';
+                        for (const [name, count] of Object.entries(data.detected_objects)) {
+                            html += `
+                                <div class="object-item">
+                                    <span class="object-name">${name}</span>
+                                    <span class="object-count">${count}</span>
+                                </div>
+                            `;
+                        }
+                        objectsList.innerHTML = html;
+                    }
+
+                    // Update detected emotions list
+                    const emotionsList = document.getElementById('emotionsList');
+                    if (data.detected_emotions && Object.keys(data.detected_emotions).length > 0) {
+                        let html = '';
+                        for (const [emotion, count] of Object.entries(data.detected_emotions)) {
+                            html += `
+                                <div class="object-item">
+                                    <span class="object-name">😊 ${emotion}</span>
+                                    <span class="object-count">${count}</span>
+                                </div>
+                            `;
+                        }
+                        emotionsList.innerHTML = html;
+                    } else {
+                        emotionsList.innerHTML = '<p style="text-align: center; color: #999;">No emotions detected</p>';
+                    }
+                });
+        }
+
+        // Update confidence value display
+        document.getElementById('confThreshold').addEventListener('input', function() {
+            document.getElementById('confValue').textContent = parseFloat(this.value).toFixed(2);
+        });
+
+        // Apply settings
+        function applySettings() {
+            const settings = {
+                roi_type: document.getElementById('roiType').value,
+                conf_threshold: parseFloat(document.getElementById('confThreshold').value),
+                show_roi: document.getElementById('showROI').checked,
+                show_labels: document.getElementById('showLabels').checked,
+                detect_emotion: document.getElementById('detectEmotion').checked,
+                flip_horizontal: document.getElementById('flipHorizontal').checked
+            };
+
+            fetch('/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(settings)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Settings updated:', data);
+                // Show notification (optional)
+                alert('Settings applied successfully!');
+            });
+        }
+
+    // Upload video file
+        function uploadVideo() {
+            const fileInput = document.getElementById('videoFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a video file');
+                return;
+            }
+
+            // Show file name
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            fileNameDisplay.textContent = `Selected: ${file.name}`;
+            fileNameDisplay.style.display = 'block';
+
+            // Create form data
+            const formData = new FormData();
+            formData.append('video', file);
+
+            // Show loading message
+            alert('Uploading video... Please wait');
+
+            // Upload file
+            fetch('/upload_video', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(`Video uploaded successfully! Now processing: ${data.filename}`);
+                    // Update UI
+                    document.getElementById('overlayText').textContent = `Video: ${data.filename}`;
+                    document.getElementById('sourceIndicator').textContent = 'Video File';
+                    document.getElementById('sourceIndicator').className = 'source-indicator source-video';
+                        // Reload video feed
+                    setTimeout(() => {
+                        document.getElementById('videoFeed').src = "{{ url_for('video_feed') }}?" + new Date().getTime();
+                    }, 1000);
+                } else {
+                    alert(`Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading video:', error);
+                alert('Error uploading video. Please try again.');
+            });
+        }
+
+        // Switch to camera mode
+        function switchToCamera() {
+            if (confirm('Switch back to camera mode?')) {
+                fetch('/switch_to_camera', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Switched to camera mode');
+                        // Update UI
+                        document.getElementById('overlayText').textContent = 'Camera Active';
+                        document.getElementById('sourceIndicator').textContent = 'Camera';
+                        document.getElementById('sourceIndicator').className = 'source-indicator source-camera';
+                        document.getElementById('fileNameDisplay').style.display = 'none';
+                        document.getElementById('videoFile').value = '';
+                        // Reload video feed
+                        setTimeout(() => {
+                            document.getElementById('videoFeed').src = "{{ url_for('video_feed') }}?" + new Date().getTime();
+                        }, 1000);
+                    } else {
+                        alert('Error switching to camera');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error switching to camera:', error);
+                    alert('Error switching to camera. Please try again.');
+                });
+            }
+        }
+
+        async function useSelectedCamera() {
+            const idx = parseInt(document.getElementById('cameraIndex').value);
+            try {
+                const res = await fetch('/camera_index', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ index: idx })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    document.getElementById('overlayText').textContent = 'Camera Active';
+                    document.getElementById('sourceIndicator').textContent = 'Camera';
+                    document.getElementById('sourceIndicator').className = 'source-indicator source-camera';
+                    document.getElementById('videoFeed').src = "{{ url_for('video_feed') }}?" + new Date().getTime();
+                } else {
+                    alert('Failed to switch camera: ' + (data.message || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('useSelectedCamera error:', e);
+                alert('Failed to switch camera');
+            }
+        }
+
+        async function useIpCamera() {
+            const url = document.getElementById('ipUrl').value.trim();
+            if (!url) {
+                alert('Please enter an IP camera URL');
+                return;
+            }
+            try {
+                const res = await fetch('/use_ip_camera', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    document.getElementById('overlayText').textContent = 'IP Camera';
+                    document.getElementById('sourceIndicator').textContent = 'IP Camera';
+                    document.getElementById('sourceIndicator').className = 'source-indicator source-video';
+                    document.getElementById('videoFeed').src = "{{ url_for('video_feed') }}?" + new Date().getTime();
+                } else {
+                    alert('Failed to use IP camera: ' + (data.message || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('useIpCamera error:', e);
+                alert('Failed to use IP camera');
+            }
+        }
+
+        // Toggle camera/video (Stop/Start)
+        async function toggleCamera() {
+            try {
+                const statusRes = await fetch('/status');
+                const status = await statusRes.json();
+                const btn = document.getElementById('toggleCameraBtn');
+                const videoEl = document.getElementById('videoFeed');
+
+                if (status.camera_active) {
+                    // Stop
+                    const res = await fetch('/stop');
+                    const data = await res.json();
+                    if (data.status === 'stopped') {
+                        document.getElementById('statusText').textContent = 'Stopped';
+                        document.getElementById('overlayText').textContent = 'Stopped';
+                        videoEl.src = '';
+                        btn.classList.remove('btn-danger');
+                        btn.classList.add('btn-success');
+                        btn.innerHTML = '<i class="fas fa-play"></i> Start Camera';
+                    }
+                } else {
+                    // Start (always start camera mode)
+                    const res = await fetch('/start', { method: 'POST' });
+                    const data = await res.json();
+                    if (data.status === 'started') {
+                        document.getElementById('statusText').textContent = 'Live Detection';
+                        document.getElementById('overlayText').textContent = 'Camera Active';
+                        document.getElementById('sourceIndicator').textContent = 'Camera';
+                        document.getElementById('sourceIndicator').className = 'source-indicator source-camera';
+                        // Reload video feed with cache-busting
+                        videoEl.src = "{{ url_for('video_feed') }}?" + new Date().getTime();
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-danger');
+                        btn.innerHTML = '<i class="fas fa-stop"></i> Stop Camera/Video';
+                    }
+                }
+            } catch (e) {
+                console.error('Toggle error:', e);
+                alert('Failed to toggle camera');
+            }
+        }
+
+        // Poll /status to keep UI button/badges in sync
+        async function updateStatusUI() {
+            try {
+                const res = await fetch('/status');
+                const s = await res.json();
+                const btn = document.getElementById('toggleCameraBtn');
+
+                if (s.camera_active) {
+                    document.getElementById('statusText').textContent = 'Live Detection';
+                    if (s.video_mode && s.current_video) {
+                        document.getElementById('overlayText').textContent = `Video: ${s.current_video}`;
+                        document.getElementById('sourceIndicator').textContent = 'Video File';
+                        document.getElementById('sourceIndicator').className = 'source-indicator source-video';
+                    } else if (s.ip_mode) {
+                        document.getElementById('overlayText').textContent = 'IP Camera';
+                        document.getElementById('sourceIndicator').textContent = 'IP Camera';
+                        document.getElementById('sourceIndicator').className = 'source-indicator source-video';
+                    } else {
+                        document.getElementById('overlayText').textContent = 'Camera Active';
+                        document.getElementById('sourceIndicator').textContent = 'Camera';
+                        document.getElementById('sourceIndicator').className = 'source-indicator source-camera';
+                    }
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-danger');
+                    btn.innerHTML = '<i class="fas fa-stop"></i> Stop Camera/Video';
+                } else {
+                    document.getElementById('statusText').textContent = 'Stopped';
+                    document.getElementById('overlayText').textContent = 'Stopped';
+                    btn.classList.remove('btn-danger');
+                    btn.classList.add('btn-success');
+                    btn.innerHTML = '<i class="fas fa-play"></i> Start Camera';
+                }
+            } catch (e) {
+                // Silent fail is okay for periodic status
+            }
+        }
+
+        // Update stats every second
+        setInterval(updateStats, 1000);
+        // Update status UI every 2 seconds
+        setInterval(updateStatusUI, 2000);
+        
+        // Initial stats update
+        updateStats();
+        updateStatusUI();
+
+        // Auto-select camera if only one is detected (e.g., DroidCam index 1)
+        async function initAutoCamera() {
+            try {
+                // If already active, skip
+                const st = await (await fetch('/status')).json();
+                if (st && st.camera_active) return;
+                const res = await fetch('/list_cameras');
+                const data = await res.json();
+                if (data && data.cameras && data.cameras.length >= 1) {
+                    let pick = data.cameras.find(c => c.index === 1) || data.cameras[0];
+                    const sel = document.getElementById('cameraIndex');
+                    if (sel) sel.value = String(pick.index);
+                    await useSelectedCamera();
+                }
+            } catch (e) { /* silent */ }
+        }
+
+        // Try once shortly after load
+        setTimeout(initAutoCamera, 500);
+    </script>
+</body>
+</html>

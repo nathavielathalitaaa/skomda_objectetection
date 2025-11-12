@@ -1,0 +1,19 @@
+# Uploads Folder
+
+Folder ini untuk menyimpan video yang diupload melalui web interface.
+
+## Format yang Didukung:
+- MP4
+- AVI
+- MOV
+- MKV
+- WMV
+- FLV
+- WEBM
+
+## Maksimal Ukuran:
+100MB per file
+
+---
+
+*File ini agar folder uploads tetap ada di git repository*

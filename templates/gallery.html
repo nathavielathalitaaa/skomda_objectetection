@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery - DTP AI Specialist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            color: #2c3e50;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar - konsisten dengan landing page */
+        .navbar {
+            background: #fff;
+            padding: 16px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-section img {
+            height: 50px;
+            width: auto;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-text h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #C41E3A;
+            line-height: 1.2;
+        }
+
+        .brand-text p {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .nav-link {
+            color: #555;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+
+        .nav-link:hover {
+            color: #C41E3A;
+            background: rgba(196, 30, 58, 0.05);
+        }
+
+        .nav-link.active {
+            color: #C41E3A;
+            background: rgba(196, 30, 58, 0.1);
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-wrapper {
+            flex: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px;
+            width: 100%;
+        }
+
+        .page-header {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        /* Folder Tabs */
+        .folder-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .folder-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 12px;
+        }
+
+        .folder-tab {
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .folder-tab:hover {
+            background: #fff;
+            border-color: #C41E3A;
+        }
+
+        .folder-tab.active {
+            background: linear-gradient(135deg, #C41E3A 0%, #A01729 100%);
+            color: #fff;
+            border-color: #C41E3A;
+        }
+
+        .folder-tab i {
+            font-size: 1.1rem;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .filter-select {
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 180px;
+        }
+
+        .filter-select:hover {
+            border-color: #C41E3A;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #C41E3A;
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #C41E3A;
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        /* Gallery Grid */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-item {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            box-shadow: 0 4px 16px rgba(196, 30, 58, 0.15);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-item-info {
+            padding: 14px 16px;
+        }
+
+        .gallery-item-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gallery-item-title i {
+            color: #C41E3A;
+        }
+
+        .gallery-item-date {
+            font-size: 0.8rem;
+            color: #999;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .gallery-item-date i {
+            font-size: 0.75rem;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .loading i {
+            font-size: 3rem;
+            color: #C41E3A;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 0.95rem;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            padding: 16px 24px;
+            border-radius: 12px;
+            border-left: 4px solid #C41E3A;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #C41E3A;
+        }
+
+        /* Footer */
+        .footer {
+            background: #fff;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .footer p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: #999;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: #C41E3A;
+        }
+
+        .copyright {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        /* Modal/Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .lightbox img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            font-size: 3rem;
+            color: #fff;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .lightbox-close:hover {
+            color: #C41E3A;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo-section img {
+                height: 40px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #C41E3A;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A01729;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-section">
+                <img src="/static/images/logo_telkom.png" alt="Telkom Schools Logo" onerror="this.style.display='none'">
+                <div class="brand-text">
+                    <h1>DTP AI Specialist</h1>
+                    <p>SMK Telkom Sidoarjo</p>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/detector" class="nav-link">Detector</a>
+                <a href="/gallery" class="nav-link active">Gallery</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-images"></i> Detection Gallery</h1>
+            <p>Koleksi gambar objek dan wajah yang telah terdeteksi oleh sistem</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-label">Total Objects</div>
+                <div class="stat-value" id="totalObjects">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Faces</div>
+                <div class="stat-value" id="totalFaces">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Images</div>
+                <div class="stat-value" id="totalImages">0</div>
+            </div>
+        </div>
+
+        <!-- Folder Section -->
+        <div class="folder-section">
+            <div class="folder-tabs">
+                <div class="folder-tab active" onclick="loadGalleryFolder('objects')" id="tabObjects">
+                    <i class="fas fa-cube"></i>
+                    <span>Objects</span>
+                </div>
+                <div class="folder-tab" onclick="loadGalleryFolder('faces')" id="tabFaces">
+                    <i class="fas fa-user"></i>
+                    <span>Faces</span>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="filter-controls">
+                <span class="filter-label"><i class="fas fa-filter"></i> Filter:</span>
+                
+                <select class="filter-select" id="sortBy" onchange="applySortAndFilter()">
+                    <option value="date-desc">Tanggal (Terbaru)</option>
+                    <option value="date-asc">Tanggal (Terlama)</option>
+                    <option value="name-asc">Nama A-Z</option>
+                    <option value="name-desc">Nama Z-A</option>
+                    <option value="category-asc">Kategori A-Z</option>
+                    <option value="category-desc">Kategori Z-A</option>
+                </select>
+
+                <select class="filter-select" id="filterCategory" onchange="applySortAndFilter()">
+                    <option value="all">Semua Kategori</option>
+                </select>
+
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchBox" placeholder="Cari berdasarkan nama..." oninput="applySortAndFilter()">
+                </div>
+            </div>
+
+            <div class="gallery-grid" id="galleryGrid">
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Loading images...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <div class="lightbox-content">
+            <img id="lightboxImg" src="" alt="Preview">
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p><strong>DTP AI Specialist - Kelas 11</strong></p>
+            <p>SMK Telkom Sidoarjo</p>
+            
+            <div class="footer-links">
+                <a href="https://smktelkom-sid.sch.id" class="footer-link" target="_blank">Website Sekolah</a>
+                <a href="#" class="footer-link">Dokumentasi</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+
+            <div class="copyright">
+                &copy; 2025 SMK Telkom Sidoarjo. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentFolder = 'objects';
+        let allImages = [];
+        let currentCategories = {};
+
+        // Load gallery on page load
+        window.addEventListener('load', function() {
+            loadGalleryFolder('objects');
+        });
+
+        // Load gallery folder
+        function loadGalleryFolder(type) {
+            currentFolder = type;
+
+            // Update active tab
+            document.getElementById('tabObjects').classList.remove('active');
+            document.getElementById('tabFaces').classList.remove('active');
+            
+            if (type === 'objects') {
+                document.getElementById('tabObjects').classList.add('active');
+            } else {
+                document.getElementById('tabFaces').classList.add('active');
+            }
+
+            // Show loading
+            document.getElementById('galleryGrid').innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Loading ${type}...</p>
+                </div>
+            `;
+
+            // Fetch gallery images
+            fetch(`/gallery/${type}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(`Gallery ${type} response:`, data);
+                    
+                    if (data.status === 'success' && data.images && data.images.length > 0) {
+                        console.log(`✅ Found ${data.count} images in ${Object.keys(data.categories || {}).length} categories`);
+                        console.log('Categories:', data.categories);
+                        
+                        // Store all images for filtering
+                        allImages = data.images;
+                        currentCategories = data.categories || {};
+
+                        // Populate category filter
+                        populateCategoryFilter();
+
+                        // Display images
+                        displayImages(allImages);
+
+                        // Update stats
+                        if (type === 'objects') {
+                            document.getElementById('totalObjects').textContent = data.count;
+                        } else {
+                            document.getElementById('totalFaces').textContent = data.count;
+                        }
+                        updateTotalImages();
+                    } else {
+                        console.log('❌ No images found');
+                        document.getElementById('galleryGrid').innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-folder-open"></i>
+                                <h3>Tidak Ada Gambar</h3>
+                                <p>Belum ada ${type === 'objects' ? 'objek' : 'wajah'} yang terdeteksi</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    console.error('Gallery load error:', err);
+                    document.getElementById('galleryGrid').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Error Loading Gallery</h3>
+                            <p>${err.message}</p>
+                        </div>
+                    `;
+                });
+        }
+
+        // Populate category filter dropdown
+        function populateCategoryFilter() {
+            const filterCategory = document.getElementById('filterCategory');
+            const categories = Object.keys(currentCategories).sort();
+            
+            let options = '<option value="all">Semua Kategori</option>';
+            categories.forEach(cat => {
+                options += `<option value="${cat}">${cat} (${currentCategories[cat]})</option>`;
+            });
+            
+            filterCategory.innerHTML = options;
+        }
+
+        // Display images with current filters
+        function displayImages(images) {
+            const galleryGrid = document.getElementById('galleryGrid');
+            const icon = currentFolder === 'objects' ? 'fa-cube' : 'fa-user';
+            
+            if (images.length === 0) {
+                galleryGrid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>Tidak Ada Hasil</h3>
+                        <p>Tidak ada gambar yang cocok dengan filter</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            images.forEach(img => {
+                html += `
+                    <div class="gallery-item" onclick="openLightbox('${img.path}')">
+                        <img src="${img.path}" alt="${img.name}" loading="lazy" 
+                             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22250%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22250%22 height=%22200%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22%3EImage Error%3C/text%3E%3C/svg%3E';">
+                        <div class="gallery-item-info">
+                            <div class="gallery-item-title">
+                                <i class="fas ${icon}"></i>
+                                <span>${img.name}</span>
+                            </div>
+                            <div class="gallery-item-date">
+                                <i class="fas fa-clock"></i>
+                                <span>${img.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            galleryGrid.innerHTML = html;
+        }
+
+        // Apply sort and filter
+        function applySortAndFilter() {
+            const sortBy = document.getElementById('sortBy').value;
+            const filterCategory = document.getElementById('filterCategory').value;
+            const searchText = document.getElementById('searchBox').value.toLowerCase();
+
+            // Start with all images
+            let filteredImages = [...allImages];
+
+            // Apply category filter
+            if (filterCategory !== 'all') {
+                filteredImages = filteredImages.filter(img => img.name === filterCategory);
+            }
+
+            // Apply search filter
+            if (searchText) {
+                filteredImages = filteredImages.filter(img => 
+                    img.name.toLowerCase().includes(searchText) ||
+                    img.filename.toLowerCase().includes(searchText)
+                );
+            }
+
+            // Apply sorting
+            switch(sortBy) {
+                case 'date-desc':
+                    filteredImages.sort((a, b) => b.timestamp - a.timestamp);
+                    break;
+                case 'date-asc':
+                    filteredImages.sort((a, b) => a.timestamp - b.timestamp);
+                    break;
+                case 'name-asc':
+                    filteredImages.sort((a, b) => a.filename.localeCompare(b.filename));
+                    break;
+                case 'name-desc':
+                    filteredImages.sort((a, b) => b.filename.localeCompare(a.filename));
+                    break;
+                case 'category-asc':
+                    filteredImages.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'category-desc':
+                    filteredImages.sort((a, b) => b.name.localeCompare(a.name));
+                    break;
+            }
+
+            console.log(`Filtered: ${filteredImages.length} images (from ${allImages.length})`);
+            displayImages(filteredImages);
+        }
+
+        // Update total images
+        function updateTotalImages() {
+            const objects = parseInt(document.getElementById('totalObjects').textContent) || 0;
+            const faces = parseInt(document.getElementById('totalFaces').textContent) || 0;
+            document.getElementById('totalImages').textContent = objects + faces;
+        }
+
+        // Lightbox functions
+        function openLightbox(imagePath) {
+            document.getElementById('lightboxImg').src = imagePath;
+            document.getElementById('lightbox').classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        // Close lightbox on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+
+        // Live polling for gallery updates (every 5s)
+        let lastObjectsCount = 0;
+        let lastFacesCount = 0;
+        let lastObjectsLatest = 0;
+        let lastFacesLatest = 0;
+
+        function pollGalleryUpdates() {
+            fetch('/gallery/latest')
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.status === 'success') {
+                        // Update stats quickly
+                        if (data.objects !== undefined) {
+                            document.getElementById('totalObjects').textContent = data.objects;
+                        }
+                        if (data.faces !== undefined) {
+                            document.getElementById('totalFaces').textContent = data.faces;
+                        }
+                        updateTotalImages();
+
+                        // If there are changes, refresh current folder view
+                        const changed = (data.objects !== lastObjectsCount) || (data.faces !== lastFacesCount) ||
+                                        (data.objects_latest !== lastObjectsLatest) || (data.faces_latest !== lastFacesLatest);
+                        if (changed) {
+                            lastObjectsCount = data.objects;
+                            lastFacesCount = data.faces;
+                            lastObjectsLatest = data.objects_latest;
+                            lastFacesLatest = data.faces_latest;
+                            // Reload currently selected folder
+                            loadGalleryFolder(currentFolder);
+                        }
+                    }
+                })
+                .catch(err => {
+                    // ignore polling errors silently
+                    console.debug('Gallery poll error', err);
+                });
+        }
+
+        // Start polling after initial load
+        setInterval(pollGalleryUpdates, 5000);
+
+    </script>
+</body>
+</html>
